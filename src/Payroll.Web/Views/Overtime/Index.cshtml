@@ -1,0 +1,22 @@
+@model OvertimeListViewModel
+@{ ViewData["Title"] = "Overtime"; bool approver = User.IsInRole(Roles.Admin) || User.IsInRole(Roles.Hr) || User.IsInRole(Roles.Payroll) || User.IsInRole(Roles.Manager); }
+<div class="pagehead"><h1>Overtime</h1>
+    <form method="get" class="inline-form"><select name="status"><option value="">All</option>@foreach (var s in new[] { "Pending", "Approved", "Rejected" }) { <option selected="@(Model.Status == s)">@s</option> }</select><button class="btn secondary small" type="submit">Filter</button></form></div>
+<div class="card"><h2>Log overtime</h2>
+    <form asp-action="Submit" method="post"><div class="form-grid">
+        @if (Model.Employees.Any()) { <div class="field"><label asp-for="Input.EmployeeId"></label><select asp-for="Input.EmployeeId" asp-items="new SelectList(Model.Employees, nameof(LookupItem.Id), nameof(LookupItem.Name))"><option value="">Myself</option></select></div> }
+        <div class="field"><label asp-for="Input.WorkDate"></label><input asp-for="Input.WorkDate" /></div>
+        <div class="field"><label asp-for="Input.Hours"></label><input asp-for="Input.Hours" type="number" step="0.25" min="0.25" max="16" /></div>
+        <div class="field"><label asp-for="Input.Multiplier"></label><input asp-for="Input.Multiplier" type="number" step="0.25" min="1" max="3" /></div>
+        <div class="field"><label asp-for="Input.Remarks"></label><input asp-for="Input.Remarks" /></div></div>
+        <p><button class="btn" type="submit">Submit</button></p></form></div>
+<div class="card scroll"><table class="data"><thead><tr><th>Employee</th><th>Date</th><th class="num">Hours</th><th class="num">x</th><th>Status</th><th>Remarks</th><th></th></tr></thead><tbody>
+@foreach (var o in Model.Result.Items)
+{
+    <tr><td>@o.EmployeeName</td><td>@Fmt.Date(o.WorkDate)</td><td class="num">@Fmt.Num(o.Hours)</td><td class="num">@Fmt.Num(o.Multiplier)</td><td><span class="badge @Fmt.Badge(o.Status)">@o.Status</span></td><td>@o.Remarks</td>
+        <td>@if (approver && o.Status == "Pending") { <form asp-action="Decide" method="post" class="inline-form"><input type="hidden" name="id" value="@o.OvertimeId" /><input name="remarks" placeholder="Remarks" /><button class="btn small" name="approve" value="true">Approve</button><button class="btn danger small" name="approve" value="false">Reject</button></form> }</td></tr>
+}
+@if (Model.Result.Items.Count == 0) { <tr><td colspan="7" class="muted">Nothing to show.</td></tr> }
+</tbody></table>
+@{ var pager = new PagerModel(Model.Result.Page, Model.Result.TotalPages, "Index", "Overtime", new Dictionary<string, string?> { ["status"] = Model.Status }); }
+<partial name="_Pager" model="pager" /></div>

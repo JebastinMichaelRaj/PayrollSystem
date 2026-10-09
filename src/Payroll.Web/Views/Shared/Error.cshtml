@@ -1,0 +1,8 @@
+@model ErrorViewModel
+@{ ViewData["Title"] = "Something went wrong"; }
+<div class="card" style="max-width:560px;margin:3rem auto">
+    <h1>@(Model.StatusCode switch { 404 => "Not found", 403 => "Access denied", _ => "Something went wrong" })</h1>
+    <p class="muted">@(Model.StatusCode == 404 ? "The page or record you asked for does not exist, or you cannot see it." : "The request could not be completed. If this keeps happening, quote the reference below to support.")</p>
+    <p class="muted">Reference: @Model.RequestId</p>
+    <a class="btn" href="/">Back to dashboard</a>
+</div>

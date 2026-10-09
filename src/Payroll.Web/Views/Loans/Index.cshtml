@@ -1,0 +1,22 @@
+@model LoansViewModel
+@{ ViewData["Title"] = "Loans"; }
+<div class="pagehead"><h1>Loans &amp; advances</h1></div>
+@if (Model.Employees.Any())
+{
+<div class="card"><h2>New loan</h2>
+    <form asp-action="Create" method="post"><div class="form-grid">
+        <div class="field"><label asp-for="Input.EmployeeId"></label><select asp-for="Input.EmployeeId" asp-items="new SelectList(Model.Employees, nameof(LookupItem.Id), nameof(LookupItem.Name))"></select></div>
+        <div class="field"><label asp-for="Input.LoanType"></label><input asp-for="Input.LoanType" /></div>
+        <div class="field"><label asp-for="Input.Principal"></label><input asp-for="Input.Principal" type="number" step="0.01" min="0.01" /></div>
+        <div class="field"><label asp-for="Input.Installment"></label><input asp-for="Input.Installment" type="number" step="0.01" min="0.01" /></div>
+        <div class="field"><label asp-for="Input.StartDate"></label><input asp-for="Input.StartDate" /></div></div>
+        <p><button class="btn" type="submit">Create loan</button></p></form></div>
+}
+<div class="card scroll"><table class="data"><thead><tr><th>#</th><th>Employee</th><th>Type</th><th class="num">Principal</th><th class="num">Instalment</th><th class="num">Outstanding</th><th>Starts</th><th>Status</th><th></th></tr></thead><tbody>
+@foreach (var l in Model.Loans)
+{
+    <tr><td>@l.LoanId</td><td>@l.EmployeeName</td><td>@l.LoanType</td><td class="num">@Fmt.Money(l.PrincipalAmount)</td><td class="num">@Fmt.Money(l.InstallmentAmount)</td><td class="num">@Fmt.Money(l.OutstandingBalance)</td><td>@Fmt.Date(l.StartDate)</td><td><span class="badge @Fmt.Badge(l.Status)">@l.Status</span></td>
+        <td>@if (l.Status == "Active" && Model.Employees.Any()) { <form asp-action="Cancel" method="post" class="inline" data-confirm="Cancel this loan?"><input type="hidden" name="id" value="@l.LoanId" /><button class="btn secondary small">Cancel</button></form> }</td></tr>
+}
+@if (!Model.Loans.Any()) { <tr><td colspan="9" class="muted">No loans.</td></tr> }
+</tbody></table></div>

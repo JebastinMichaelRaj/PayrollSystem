@@ -1,0 +1,7 @@
+@model IReadOnlyList<PayslipListItem>
+@{ ViewData["Title"] = "My payslips"; }
+<div class="pagehead"><h1>My payslips</h1></div>
+<div class="card"><table class="data"><thead><tr><th>Period</th><th class="num">Gross</th><th class="num">Deductions</th><th class="num">Net pay</th><th></th></tr></thead><tbody>
+@foreach (var p in Model) { <tr><td>@Fmt.Month(p.PeriodYear, p.PeriodMonth)</td><td class="num">@Fmt.Money(p.GrossEarnings)</td><td class="num">@Fmt.Money(p.TotalDeductions)</td><td class="num"><b>@Fmt.Money(p.NetPay)</b></td><td><a asp-action="Details" asp-route-id="@p.PayslipId">View / print</a></td></tr> }
+@if (Model.Count == 0) { <tr><td colspan="5" class="muted">No finalised payslips yet. Payslips appear after the payroll run is approved.</td></tr> }
+</tbody></table></div>

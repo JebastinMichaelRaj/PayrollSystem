@@ -1,0 +1,20 @@
+@model ReportPageViewModel
+@{ ViewData["Title"] = Model.Title; }
+<div class="pagehead"><div><h1>@Model.Title</h1>@if (Model.Subtitle is not null) { <span class="muted">@Model.Subtitle</span> }</div>
+    <div class="noprint">@if (Model.ExportUrl is not null) { <a class="btn secondary" href="@Model.ExportUrl">Export CSV</a> } <a class="btn secondary" asp-action="Index">All reports</a></div></div>
+@if (Model.Tables.Count > 0 && Model.Tables[0].Columns.Contains("Details") && ViewContext.RouteData.Values["action"]?.ToString() == "Audit")
+{
+    <form method="get" class="toolbar card"><div class="field"><label>From</label><input type="date" name="from" value="@Context.Request.Query["from"]" /></div><div class="field"><label>To</label><input type="date" name="to" value="@Context.Request.Query["to"]" /></div>
+        <div class="field"><label>Entity</label><input name="entity" value="@Context.Request.Query["entity"]" /></div><div class="field"><label>User</label><input name="username" value="@Context.Request.Query["username"]" /></div><button class="btn secondary" type="submit">Filter</button></form>
+}
+@foreach (var t in Model.Tables)
+{
+    <div class="card scroll"><h2>@t.Title</h2>
+        <table class="data"><thead><tr>@foreach (var c in t.Columns) { <th>@c</th> }</tr></thead><tbody>
+        @foreach (var row in t.Rows) { <tr>@foreach (var cell in row) { <td class="@(cell is decimal ? "num" : "")">@Fmt.Cell(cell)</td> }</tr> }
+        @if (t.Rows.Count == 0) { <tr><td colspan="@Math.Max(1, t.Columns.Count)" class="muted">No data.</td></tr> }
+        </tbody></table>
+        @if (t.TotalRows is { } total) { <p class="muted">@total row(s)</p> }
+    </div>
+}
+@if (Model.Pager is { } pg) { <partial name="_Pager" model="pg" /> }

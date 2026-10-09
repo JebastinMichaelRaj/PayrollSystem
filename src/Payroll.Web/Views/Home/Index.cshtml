@@ -1,0 +1,17 @@
+@model DashboardDto
+@{ ViewData["Title"] = "Dashboard"; }
+<div class="pagehead"><h1>Dashboard</h1></div>
+<div class="stats">
+    <div class="stat"><b>@Model.ActiveEmployees</b><span>Active employees</span></div>
+    <div class="stat"><b>@Model.PendingLeaves</b><span>Leave requests awaiting decision</span></div>
+    <div class="stat"><b>@Model.PendingOvertime</b><span>Overtime entries pending</span></div>
+    <div class="stat"><b>@Model.ActiveLoans</b><span>Active loans</span></div>
+</div>
+@if (Model.LatestRunId is { } id)
+{
+    <div class="card">
+        <h2>Latest payroll run</h2>
+        <p>@Fmt.Month(Model.LatestRunYear!.Value, Model.LatestRunMonth!.Value) &middot; <span class="badge @Fmt.Badge(Model.LatestRunStatus!)">@Model.LatestRunStatus</span> &middot; net @Fmt.Money(Model.LatestRunNet ?? 0)</p>
+        @if (User.IsInRole(Roles.Admin) || User.IsInRole(Roles.Hr) || User.IsInRole(Roles.Payroll)) { <a class="btn secondary" asp-controller="Payroll" asp-action="Run" asp-route-id="@id">Open run</a> }
+    </div>
+}

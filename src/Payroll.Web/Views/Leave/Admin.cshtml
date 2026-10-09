@@ -1,0 +1,21 @@
+@model LeaveAdminViewModel
+@{ ViewData["Title"] = "Leave administration"; }
+<div class="pagehead"><h1>Leave administration</h1></div>
+<div class="card"><h2>Monthly accrual</h2>
+    <form asp-action="Accrue" method="post" class="inline-form"><div class="field"><label>Year</label><input name="year" type="number" value="@Model.Year" /></div><div class="field"><label>Month</label><input name="month" type="number" min="1" max="12" value="@Model.Month" /></div>
+        <button class="btn" type="submit" style="align-self:end">Run accrual</button></form>
+    <p class="muted">Idempotent: running a month twice never double-credits. Joiners after the 15th start accruing next month.</p></div>
+<div class="card"><h2>Year-end rollover</h2>
+    <form asp-action="YearEnd" method="post" class="inline-form" data-confirm="Run carry-forward for the closing year and January accrual of the next year?"><div class="field"><label>Closing year</label><input name="closingYear" type="number" value="@(Model.Year - 1)" /></div>
+        <button class="btn" type="submit" style="align-self:end">Carry forward</button></form>
+    <p class="muted">Carries each balance up to the leave type's cap into the next year and posts January accrual, in one transaction.</p></div>
+<div class="card"><h2>Manual adjustment</h2>
+    <form asp-action="Adjust" method="post"><div class="form-grid">
+        <div class="field"><label asp-for="Adjust.EmployeeId"></label><select asp-for="Adjust.EmployeeId" asp-items="new SelectList(Model.Employees, nameof(LookupItem.Id), nameof(LookupItem.Name))"></select></div>
+        <div class="field"><label asp-for="Adjust.LeaveTypeId"></label><select asp-for="Adjust.LeaveTypeId" asp-items="new SelectList(Model.Types, nameof(LeaveTypeDto.LeaveTypeId), nameof(LeaveTypeDto.Name))"></select></div>
+        <div class="field"><label asp-for="Adjust.Year"></label><input asp-for="Adjust.Year" type="number" /></div>
+        <div class="field"><label asp-for="Adjust.Days"></label><input asp-for="Adjust.Days" type="number" step="0.5" /></div>
+        <div class="field"><label asp-for="Adjust.Remarks"></label><input asp-for="Adjust.Remarks" maxlength="300" /></div></div>
+        <p><button class="btn" type="submit">Apply adjustment</button></p></form></div>
+<div class="card"><h2>Employee ledger</h2>
+    <form asp-action="Ledger" method="get" class="inline-form"><select name="employeeId">@foreach (var e in Model.Employees) { <option value="@e.Id">@e.Name</option> }</select><input name="year" type="number" value="@Model.Year" /><button class="btn secondary" type="submit">View</button></form></div>

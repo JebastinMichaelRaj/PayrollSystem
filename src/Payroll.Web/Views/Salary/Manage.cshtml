@@ -1,0 +1,42 @@
+@model SalaryManageViewModel
+@{
+    var e = Model.Employee; ViewData["Title"] = "Salary - " + e.FullName;
+    var componentItems = Model.Definitions.Select(d => new SelectListItem($"{d.Name} ({d.ComponentType}, {(d.CalcMethod == CalcMethod.PercentOfBasic ? "% of basic" : "fixed")})", d.ComponentId.ToString()));
+}
+<div class="pagehead"><h1>Salary &amp; components</h1><a asp-controller="Employees" asp-action="Details" asp-route-id="@e.EmployeeId">&laquo; @e.FullName (@e.EmployeeCode)</a></div>
+<div class="card"><h2>Salary structure</h2>
+    <table class="data"><thead><tr><th>From</th><th>To</th><th class="num">Basic / month</th><th class="num">Std hours</th><th>Overtime</th></tr></thead><tbody>
+    @foreach (var s in Model.History) { <tr><td>@Fmt.Date(s.EffectiveFrom)</td><td>@(s.EffectiveTo is null ? "current" : Fmt.Date(s.EffectiveTo))</td><td class="num">@Fmt.Money(s.BasicSalary)</td><td class="num">@Fmt.Num(s.StandardHoursPerMonth)</td><td>@(s.OvertimeEligible ? "Eligible" : "No")</td></tr> }
+    </tbody></table>
+    <h3 style="margin-top:1rem">Set new structure</h3>
+    <form asp-action="SetSalary" method="post">
+        <input type="hidden" asp-for="Salary.EmployeeId" />
+        <div class="form-grid">
+            <div class="field"><label asp-for="Salary.EffectiveFrom"></label><input asp-for="Salary.EffectiveFrom" /></div>
+            <div class="field"><label asp-for="Salary.BasicSalary"></label><input asp-for="Salary.BasicSalary" type="number" step="0.01" min="0.01" /></div>
+            <div class="field"><label asp-for="Salary.StandardHoursPerMonth"></label><input asp-for="Salary.StandardHoursPerMonth" type="number" step="0.01" /></div>
+            <div class="field check"><label><input asp-for="Salary.OvertimeEligible" /> Overtime eligible</label></div>
+        </div>
+        <p class="muted">The previous structure is closed the day before the new effective date. Dates inside a finalised payroll month are rejected.</p>
+        <button class="btn" type="submit">Save structure</button>
+    </form></div>
+<div class="card"><h2>Allowances &amp; deductions</h2>
+    <table class="data"><thead><tr><th>Component</th><th>Type</th><th>Method</th><th class="num">Value</th><th>From</th><th>To</th><th></th></tr></thead><tbody>
+    @foreach (var c in Model.Components)
+    {
+        <tr><td>@c.Name (@c.Code)</td><td>@c.ComponentType</td><td>@(c.CalcMethod == CalcMethod.PercentOfBasic ? "% of basic" : "Fixed")</td><td class="num">@Fmt.Money(c.Value)@(c.CalcMethod == CalcMethod.PercentOfBasic ? "%" : "")</td>
+            <td>@Fmt.Date(c.EffectiveFrom)</td><td>@(c.EffectiveTo is null ? "current" : Fmt.Date(c.EffectiveTo))</td>
+            <td>@if (c.EffectiveTo is null) { <form asp-action="EndComponent" method="post" class="inline-form" data-confirm="End this component?"><input type="hidden" name="employeeComponentId" value="@c.EmployeeComponentId" /><input type="hidden" name="employeeId" value="@e.EmployeeId" /><input type="date" name="endDate" required /><button class="btn secondary small" type="submit">End</button></form> }</td></tr>
+    }
+    @if (!Model.Components.Any()) { <tr><td colspan="7" class="muted">None assigned.</td></tr> }
+    </tbody></table>
+    <h3 style="margin-top:1rem">Assign component</h3>
+    <form asp-action="AssignComponent" method="post">
+        <input type="hidden" asp-for="Assign.EmployeeId" />
+        <div class="form-grid">
+            <div class="field"><label asp-for="Assign.ComponentId"></label><select asp-for="Assign.ComponentId" asp-items="componentItems"></select></div>
+            <div class="field"><label asp-for="Assign.Value"></label><input asp-for="Assign.Value" type="number" step="0.0001" min="0.0001" /></div>
+            <div class="field"><label asp-for="Assign.EffectiveFrom"></label><input asp-for="Assign.EffectiveFrom" /></div>
+        </div>
+        <p><button class="btn" type="submit">Assign</button></p>
+    </form></div>

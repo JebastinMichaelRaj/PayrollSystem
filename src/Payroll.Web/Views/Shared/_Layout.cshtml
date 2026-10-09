@@ -1,0 +1,67 @@
+@{
+    bool signedIn = User.Identity?.IsAuthenticated == true;
+    bool Is(params string[] roles) => roles.Any(User.IsInRole);
+}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@(ViewData["Title"] ?? "Payroll") - Ledgerline</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+@if (signedIn)
+{
+    <div class="shell">
+        <aside class="side">
+            <div class="brand">Ledgerline<small>Payroll console</small></div>
+            <a asp-controller="Home" asp-action="Index">Dashboard</a>
+            <h4>Me</h4>
+            <a asp-controller="Payslips" asp-action="My">My payslips</a>
+            <a asp-controller="Leave" asp-action="Index">My leave</a>
+            <a asp-controller="Overtime" asp-action="Index">Overtime</a>
+            <a asp-controller="Loans" asp-action="Index">Loans</a>
+            <a asp-controller="Holidays" asp-action="Index">Holidays</a>
+            @if (Is(Roles.Admin, Roles.Hr, Roles.Manager))
+            {
+                <h4>Approvals</h4>
+                <a asp-controller="Leave" asp-action="Pending">Leave requests</a>
+            }
+            @if (Is(Roles.Admin, Roles.Hr))
+            {
+                <h4>People</h4>
+                <a asp-controller="Employees" asp-action="Index">Employees</a>
+                <a asp-controller="Leave" asp-action="Admin">Leave administration</a>
+            }
+            @if (Is(Roles.Admin, Roles.Hr, Roles.Payroll))
+            {
+                <h4>Payroll</h4>
+                <a asp-controller="Payroll" asp-action="Index">Payroll runs</a>
+                <a asp-controller="Reports" asp-action="Index">Reports</a>
+            }
+            @if (Is(Roles.Admin))
+            {
+                <h4>Administration</h4>
+                <a asp-controller="Users" asp-action="Index">Users</a>
+                <a asp-controller="Reports" asp-action="Audit">Audit trail</a>
+            }
+        </aside>
+        <div class="main">
+            <div class="top">
+                <span>@User.Identity!.Name &middot; @(User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value)</span>
+                <a asp-controller="Account" asp-action="ChangePassword">Password</a>
+                <form asp-controller="Account" asp-action="Logout" method="post"><button class="btn secondary small" type="submit">Sign out</button></form>
+            </div>
+            <partial name="_Flash" />
+            @RenderBody()
+        </div>
+    </div>
+}
+else
+{
+    <main class="auth">@RenderBody()</main>
+}
+<script src="~/js/site.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+@model HolidaysViewModel
+@{ ViewData["Title"] = "Holidays"; bool canEdit = User.IsInRole(Roles.Admin) || User.IsInRole(Roles.Hr); }
+<div class="pagehead"><h1>Holidays @Model.Year</h1>
+    <div><a asp-route-year="@(Model.Year - 1)">&laquo; @(Model.Year - 1)</a> &nbsp; <a asp-route-year="@(Model.Year + 1)">@(Model.Year + 1) &raquo;</a></div></div>
+@if (canEdit)
+{
+    <div class="card"><h2>Add / rename</h2><form asp-action="Upsert" method="post" class="inline-form">
+        <div class="field"><label>Date</label><input type="date" name="date" required /></div><div class="field"><label>Name</label><input name="name" maxlength="100" required /></div>
+        <button class="btn" type="submit" style="align-self:end">Save</button></form>
+        <p class="muted">Holidays are excluded from leave day counts and from the working days used to pro-rate unpaid leave.</p></div>
+}
+<div class="card"><table class="data"><thead><tr><th>Date</th><th>Name</th><th></th></tr></thead><tbody>
+@foreach (var h in Model.Holidays) { <tr><td>@Fmt.Date(h.HolidayDate)</td><td>@h.Name</td><td>@if (canEdit) { <form asp-action="Delete" method="post" class="inline" data-confirm="Remove this holiday?"><input type="hidden" name="date" value="@h.HolidayDate.ToString("yyyy-MM-dd")" /><button class="btn secondary small">Remove</button></form> }</td></tr> }
+@if (!Model.Holidays.Any()) { <tr><td colspan="3" class="muted">No holidays defined.</td></tr> }
+</tbody></table></div>

@@ -1,0 +1,14 @@
+@model PagedResult<LeaveRequestDto>
+@{ ViewData["Title"] = "Leave approvals"; }
+<div class="pagehead"><h1>Leave awaiting decision</h1></div>
+<div class="card scroll"><table class="data"><thead><tr><th>Employee</th><th>Type</th><th>From</th><th>To</th><th class="num">Days</th><th>Reason</th><th>Decision</th></tr></thead><tbody>
+@foreach (var r in Model.Items)
+{
+    <tr><td>@r.EmployeeName</td><td>@r.LeaveType</td><td>@Fmt.Date(r.FromDate)</td><td>@Fmt.Date(r.ToDate)</td><td class="num">@Fmt.Num(r.Days)</td><td>@r.Reason</td>
+        <td><form asp-action="Decide" method="post" class="inline-form"><input type="hidden" name="id" value="@r.LeaveRequestId" /><input name="remarks" placeholder="Note (optional)" maxlength="500" />
+            <button class="btn small" name="approve" value="true">Approve</button><button class="btn danger small" name="approve" value="false">Reject</button></form></td></tr>
+}
+@if (Model.Items.Count == 0) { <tr><td colspan="7" class="muted">Nothing is waiting for you.</td></tr> }
+</tbody></table>
+@{ var pager = new PagerModel(Model.Page, Model.TotalPages, "Pending", "Leave", new Dictionary<string, string?>()); }
+<partial name="_Pager" model="pager" /></div>

@@ -1,0 +1,26 @@
+@model LeaveIndexViewModel
+@{ ViewData["Title"] = "My leave"; }
+<div class="pagehead"><h1>My leave @Model.Year</h1>
+    <div><a asp-route-year="@(Model.Year - 1)">&laquo; @(Model.Year - 1)</a> &nbsp; <a asp-route-year="@(Model.Year + 1)">@(Model.Year + 1) &raquo;</a></div></div>
+<div class="card scroll"><h2>Balances</h2><table class="data"><thead><tr><th>Type</th><th class="num">Opening</th><th class="num">Accrued</th><th class="num">Adjusted</th><th class="num">Used</th><th class="num">Pending</th><th class="num">Available</th></tr></thead><tbody>
+@foreach (var b in Model.Balances) { <tr><td>@b.Name @if (!b.IsPaid) { <span class="badge">unpaid</span> }</td><td class="num">@Fmt.Num(b.Opening)</td><td class="num">@Fmt.Num(b.Accrued)</td><td class="num">@Fmt.Num(b.Adjusted)</td><td class="num">@Fmt.Num(b.Used)</td><td class="num">@Fmt.Num(b.PendingDays)</td><td class="num"><b>@Fmt.Num(b.Balance - b.PendingDays)</b></td></tr> }
+</tbody></table></div>
+<div class="card"><h2>Request leave</h2>
+    <form asp-action="Apply" method="post"><div class="form-grid">
+        <div class="field"><label asp-for="Input.LeaveTypeId"></label><select asp-for="Input.LeaveTypeId" asp-items="new SelectList(Model.Types, nameof(LeaveTypeDto.LeaveTypeId), nameof(LeaveTypeDto.Name))"></select></div>
+        <div class="field"><label asp-for="Input.FromDate"></label><input asp-for="Input.FromDate" /></div>
+        <div class="field"><label asp-for="Input.ToDate"></label><input asp-for="Input.ToDate" /></div>
+        <div class="field check"><label><input asp-for="Input.IsHalfDay" /> Half day</label></div>
+        <div class="field"><label asp-for="Input.Reason"></label><input asp-for="Input.Reason" /></div></div>
+        <p class="muted">Weekends and public holidays are not counted. Pending requests reserve balance.</p>
+        <button class="btn" type="submit">Submit request</button></form></div>
+<div class="card scroll"><h2>My requests</h2><table class="data"><thead><tr><th>Type</th><th>From</th><th>To</th><th class="num">Days</th><th>Status</th><th>Decision note</th><th></th></tr></thead><tbody>
+@foreach (var r in Model.Requests.Items)
+{
+    <tr><td>@r.LeaveType</td><td>@Fmt.Date(r.FromDate)</td><td>@Fmt.Date(r.ToDate)</td><td class="num">@Fmt.Num(r.Days)</td><td><span class="badge @Fmt.Badge(r.Status)">@r.Status</span></td><td>@r.DecisionRemarks</td>
+        <td>@if (r.Status is "Pending" or "Approved") { <form asp-action="Cancel" method="post" class="inline" data-confirm="Cancel this request?"><input type="hidden" name="id" value="@r.LeaveRequestId" /><button class="btn secondary small">Cancel</button></form> }</td></tr>
+}
+@if (Model.Requests.Items.Count == 0) { <tr><td colspan="7" class="muted">No requests yet.</td></tr> }
+</tbody></table>
+@{ var pager = new PagerModel(Model.Requests.Page, Model.Requests.TotalPages, "Index", "Leave", new Dictionary<string, string?> { ["year"] = Model.Year.ToString() }); }
+<partial name="_Pager" model="pager" /></div>

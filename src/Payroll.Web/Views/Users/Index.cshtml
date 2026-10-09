@@ -1,0 +1,18 @@
+@model UsersViewModel
+@{ ViewData["Title"] = "Users"; }
+<div class="pagehead"><h1>Users &amp; roles</h1></div>
+<div class="card"><h2>Create user</h2>
+    <form asp-action="Create" method="post"><div asp-validation-summary="All" class="validation-summary-errors"></div><div class="form-grid">
+        <div class="field"><label asp-for="Input.Username"></label><input asp-for="Input.Username" autocomplete="off" /></div>
+        <div class="field"><label asp-for="Input.Password">Temporary password</label><input asp-for="Input.Password" autocomplete="new-password" /></div>
+        <div class="field"><label asp-for="Input.Role"></label><select asp-for="Input.Role" asp-items="new SelectList(Roles.All)"></select></div>
+        <div class="field"><label asp-for="Input.EmployeeId"></label><select asp-for="Input.EmployeeId" asp-items="new SelectList(Model.Employees, nameof(LookupItem.Id), nameof(LookupItem.Name))"><option value="">Not linked</option></select></div></div>
+        <p class="muted">Link employee-facing roles (Employee, Manager, HR, Payroll) to their employee record so self-service and approval scoping work.</p>
+        <button class="btn" type="submit">Create</button></form></div>
+<div class="card scroll"><table class="data"><thead><tr><th>Username</th><th>Role</th><th>Employee</th><th>Last sign-in</th><th>Status</th><th></th></tr></thead><tbody>
+@foreach (var u in Model.Users)
+{
+    <tr><td>@u.Username</td><td>@u.Role</td><td>@(u.EmployeeName ?? "-")</td><td>@(u.LastLoginUtc is { } d ? Fmt.DateTime(d) : "never")</td><td><span class="badge @(u.IsActive ? "ok" : "off")">@(u.IsActive ? "Active" : "Disabled")</span></td>
+        <td><form asp-action="SetActive" method="post" class="inline"><input type="hidden" name="id" value="@u.UserId" /><button class="btn secondary small" name="active" value="@((!u.IsActive).ToString().ToLowerInvariant())">@(u.IsActive ? "Disable" : "Enable")</button></form></td></tr>
+}
+</tbody></table></div>

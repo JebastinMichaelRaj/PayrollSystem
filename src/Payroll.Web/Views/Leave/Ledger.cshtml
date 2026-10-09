@@ -1,0 +1,10 @@
+@model LedgerViewModel
+@{ ViewData["Title"] = "Leave ledger"; }
+<div class="pagehead"><h1>Leave ledger @Model.Year</h1><a asp-action="Admin">&laquo; Administration</a></div>
+<div class="card scroll"><h2>Balances</h2><table class="data"><thead><tr><th>Type</th><th class="num">Opening</th><th class="num">Accrued</th><th class="num">Adjusted</th><th class="num">Used</th><th class="num">Balance</th></tr></thead><tbody>
+@foreach (var b in Model.Balances) { <tr><td>@b.Name</td><td class="num">@Fmt.Num(b.Opening)</td><td class="num">@Fmt.Num(b.Accrued)</td><td class="num">@Fmt.Num(b.Adjusted)</td><td class="num">@Fmt.Num(b.Used)</td><td class="num">@Fmt.Num(b.Balance)</td></tr> }
+</tbody></table></div>
+<div class="card scroll"><h2>Transactions</h2><table class="data"><thead><tr><th>When</th><th>Type</th><th>Transaction</th><th class="num">Days</th><th>Request</th><th>Remarks</th></tr></thead><tbody>
+@foreach (var l in Model.Entries) { <tr><td class="nowrap">@Fmt.DateTime(l.CreatedAt)</td><td>@l.LeaveType</td><td>@l.TxnType</td><td class="num">@(l.Days > 0 ? "+" : "")@Fmt.Num(l.Days)</td><td>@l.LeaveRequestId</td><td>@l.Remarks</td></tr> }
+@if (Model.Entries.Count == 0) { <tr><td colspan="6" class="muted">No transactions.</td></tr> }
+</tbody></table></div>

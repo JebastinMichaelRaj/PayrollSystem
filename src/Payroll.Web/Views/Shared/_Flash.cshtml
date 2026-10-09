@@ -1,0 +1,2 @@
+@if (TempData["Success"] is string ok) { <div class="flash success" role="status">@ok</div> }
+@if (TempData["Error"] is string err) { <div class="flash error" role="alert">@err</div> }

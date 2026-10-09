@@ -1,0 +1,23 @@
+@model EmployeeFormViewModel
+@{ ViewData["Title"] = Model.IsEdit ? "Edit employee" : "New employee"; var L = Model.Lookups; }
+<div class="pagehead"><h1>@ViewData["Title"]</h1></div>
+<form method="post" class="card">
+    <div asp-validation-summary="All" class="validation-summary-errors"></div>
+    <input type="hidden" asp-for="Input.EmployeeId" /><input type="hidden" asp-for="Input.RowVersion" />
+    <div class="form-grid">
+        <div class="field"><label asp-for="Input.FirstName"></label><input asp-for="Input.FirstName" /><span asp-validation-for="Input.FirstName" class="field-error"></span></div>
+        <div class="field"><label asp-for="Input.LastName"></label><input asp-for="Input.LastName" /><span asp-validation-for="Input.LastName" class="field-error"></span></div>
+        <div class="field"><label asp-for="Input.Email"></label><input asp-for="Input.Email" type="email" /><span asp-validation-for="Input.Email" class="field-error"></span></div>
+        <div class="field"><label asp-for="Input.Phone"></label><input asp-for="Input.Phone" /></div>
+        <div class="field"><label asp-for="Input.DateOfBirth"></label><input asp-for="Input.DateOfBirth" /><span asp-validation-for="Input.DateOfBirth" class="field-error"></span></div>
+        <div class="field"><label asp-for="Input.JoinDate"></label><input asp-for="Input.JoinDate" /><span asp-validation-for="Input.JoinDate" class="field-error"></span></div>
+        <div class="field"><label asp-for="Input.DepartmentId"></label><select asp-for="Input.DepartmentId" asp-items="new SelectList(L.Departments, nameof(LookupItem.Id), nameof(LookupItem.Name))"><option value="">Select...</option></select></div>
+        <div class="field"><label asp-for="Input.DesignationId"></label><select asp-for="Input.DesignationId" asp-items="new SelectList(L.Designations, nameof(LookupItem.Id), nameof(LookupItem.Name))"><option value="">Select...</option></select></div>
+        <div class="field"><label asp-for="Input.ManagerId"></label><select asp-for="Input.ManagerId" asp-items="new SelectList(L.Employees.Where(m => m.Id != Model.Input.EmployeeId), nameof(LookupItem.Id), nameof(LookupItem.Name))"><option value="">None</option></select></div>
+        <div class="field"><label asp-for="Input.EmploymentType"></label><select asp-for="Input.EmploymentType"><option>FullTime</option><option>PartTime</option><option>Contract</option></select></div>
+        <div class="field"><label asp-for="Input.TaxIdNumber"></label><input asp-for="Input.TaxIdNumber" /></div>
+        <div class="field"><label asp-for="Input.BankName"></label><input asp-for="Input.BankName" /></div>
+        <div class="field"><label asp-for="Input.BankAccountNumber"></label><input asp-for="Input.BankAccountNumber" autocomplete="off" /></div>
+    </div>
+    <p><button class="btn" type="submit">Save</button> <a class="btn secondary" asp-action="Index">Cancel</a></p>
+</form>

@@ -1,0 +1,19 @@
+@model PayslipDetailDto
+@{ ViewData["Title"] = "Payslip " + Model.Period; var earn = Model.Lines.Where(l => l.LineType == LineType.Earning).ToList(); var ded = Model.Lines.Where(l => l.LineType == LineType.Deduction).ToList(); }
+<div class="pagehead noprint"><h1>Payslip</h1><button class="btn secondary" type="button" data-print>Print</button></div>
+<div class="card slip">
+    <div class="head"><div><h2 style="margin:0">@Model.FullName</h2><span class="muted">@Model.EmployeeCode &middot; @Model.Designation &middot; @Model.Department</span></div>
+        <div class="right"><b>@Model.Period</b><br /><span class="muted">Run: @Model.RunStatus</span></div></div>
+    <dl class="kv" style="margin-bottom:1rem">
+        <dt>Working days</dt><dd>@Fmt.Num(Model.WorkingDays) (paid @Fmt.Num(Model.PaidDays), unpaid @Fmt.Num(Model.LopDays))</dd>
+        <dt>Overtime hours</dt><dd>@Fmt.Num(Model.OvertimeHours)</dd>
+        <dt>Tax ID</dt><dd>@(Model.TaxIdNumber ?? "-")</dd><dt>Bank</dt><dd>@(Model.BankName ?? "-") @Model.BankAccountMasked</dd>
+    </dl>
+    <div class="cols">
+        <div><h3>Earnings</h3><table class="data"><tbody>@foreach (var l in earn) { <tr><td>@l.Description</td><td class="num">@Fmt.Money(l.Amount)</td></tr> }
+            <tr><td><b>Gross earnings</b></td><td class="num"><b>@Fmt.Money(Model.GrossEarnings)</b></td></tr></tbody></table></div>
+        <div><h3>Deductions</h3><table class="data"><tbody>@foreach (var l in ded) { <tr><td>@l.Description</td><td class="num">@Fmt.Money(l.Amount)</td></tr> }
+            <tr><td><b>Total deductions</b></td><td class="num"><b>@Fmt.Money(Model.TotalDeductions)</b></td></tr></tbody></table></div>
+    </div>
+    <div class="net"><span>Net pay</span><span>@Fmt.Money(Model.NetPay)</span></div>
+</div>

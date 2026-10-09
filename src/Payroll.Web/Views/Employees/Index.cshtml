@@ -1,0 +1,26 @@
+@model EmployeeListViewModel
+@{ ViewData["Title"] = "Employees"; }
+<div class="pagehead"><h1>Employees</h1><a class="btn" asp-action="Create">Add employee</a></div>
+<form method="get" class="toolbar">
+    <div class="field"><label>Search</label><input name="Search" value="@Model.Search" placeholder="Code, name or email" /></div>
+    <div class="field"><label>Department</label>
+        <select name="DepartmentId"><option value="">All</option>@foreach (var d in Model.Lookups.Departments) { <option value="@d.Id" selected="@(Model.DepartmentId == d.Id)">@d.Name</option> }</select></div>
+    <div class="field"><label>Status</label>
+        <select name="IsActive"><option value="" selected="@(Model.IsActive is null)">All</option><option value="true" selected="@(Model.IsActive == true)">Active</option><option value="false" selected="@(Model.IsActive == false)">Left</option></select></div>
+    <button class="btn secondary" type="submit">Filter</button>
+</form>
+<div class="card scroll"><table class="data">
+    <thead><tr><th>Code</th><th>Name</th><th>Email</th><th>Department</th><th>Designation</th><th>Joined</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+    @foreach (var e in Model.Result.Items)
+    {
+        <tr><td>@e.EmployeeCode</td><td>@e.FullName</td><td>@e.Email</td><td>@e.Department</td><td>@e.Designation</td><td class="nowrap">@Fmt.Date(e.JoinDate)</td>
+            <td><span class="badge @(e.IsActive ? "ok" : "off")">@(e.IsActive ? "Active" : "Left")</span></td>
+            <td><a asp-action="Details" asp-route-id="@e.EmployeeId">View</a></td></tr>
+    }
+    @if (Model.Result.Items.Count == 0) { <tr><td colspan="8" class="muted">No employees match.</td></tr> }
+    </tbody></table>
+    <p class="muted">@Model.Result.Total employee(s)</p>
+    @{ var pager = new PagerModel(Model.Page, Model.Result.TotalPages, "Index", "Employees", new Dictionary<string, string?> { ["Search"] = Model.Search, ["DepartmentId"] = Model.DepartmentId?.ToString(), ["IsActive"] = Model.IsActive?.ToString().ToLowerInvariant() }); }
+<partial name="_Pager" model="pager" />
+</div>

@@ -1,0 +1,15 @@
+@model ReportsIndexViewModel
+@{ ViewData["Title"] = "Reports"; var runItems = Model.Runs.Select(r => new SelectListItem($"{Fmt.Month(r.PeriodYear, r.PeriodMonth)} ({r.Status})", r.PayrollRunId.ToString())).ToList(); }
+<div class="pagehead"><h1>Reports</h1></div>
+@foreach (var (title, action, note) in new[] { ("Payroll register", "Register", "Every payslip in a run."), ("Departmental payroll summary", "Department", "Headcount and cost per department."), ("Statutory compliance", "Statutory", "Remittance totals by statutory code, plus per-employee detail.") })
+{
+    <div class="card"><h2>@title</h2><p class="muted">@note</p>
+        <form asp-action="@action" method="get" class="inline-form"><select name="runId">@foreach (var i in runItems) { <option value="@i.Value">@i.Text</option> }</select><button class="btn secondary" type="submit">View</button></form></div>
+}
+<div class="card"><h2>Tax report</h2><p class="muted">Tax withheld per employee for a financial year (approved/paid runs only).</p>
+    <form asp-action="Tax" method="get" class="inline-form"><div class="field"><label>Financial year (start)</label><input name="financialYear" type="number" value="@Model.FinancialYear" /></div>
+        <div class="field"><label>Department</label><select name="departmentId"><option value="">All</option>@foreach (var d in Model.Departments) { <option value="@d.Id">@d.Name</option> }</select></div>
+        <button class="btn secondary" type="submit" style="align-self:end">View</button></form></div>
+<div class="card"><h2>Leave balances</h2><form asp-action="LeaveBalance" method="get" class="inline-form"><div class="field"><label>Year</label><input name="year" type="number" value="@Model.Year" /></div>
+        <div class="field"><label>Department</label><select name="departmentId"><option value="">All</option>@foreach (var d in Model.Departments) { <option value="@d.Id">@d.Name</option> }</select></div>
+        <button class="btn secondary" type="submit" style="align-self:end">View</button></form></div>

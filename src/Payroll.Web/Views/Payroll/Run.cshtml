@@ -1,0 +1,39 @@
+@model PayrollRunViewModel
+@{ var r = Model.Run; ViewData["Title"] = "Payroll " + r.Period; bool canManage = User.IsInRole(Roles.Admin) || User.IsInRole(Roles.Payroll); }
+<div class="pagehead"><h1>@r.Period <span class="badge @Fmt.Badge(r.Status)">@r.Status</span></h1><a asp-action="Index">&laquo; All runs</a></div>
+@if (Model.Warnings.Count > 0) { <div class="flash warnings"><b>Processing warnings</b><ul>@foreach (var w in Model.Warnings) { <li>@w</li> }</ul></div> }
+<div class="stats">
+    <div class="stat"><b>@r.EmployeeCount</b><span>Payslips</span></div><div class="stat"><b>@Fmt.Money(r.TotalGross)</b><span>Gross earnings</span></div>
+    <div class="stat"><b>@Fmt.Money(r.TotalDeductions)</b><span>Deductions</span></div><div class="stat"><b>@Fmt.Money(r.TotalNet)</b><span>Net pay</span></div>
+    <div class="stat"><b>@Fmt.Money(r.TotalEmployerCost)</b><span>Employer contributions</span></div>
+</div>
+<div class="card"><h2>Actions</h2><div class="toolbar">
+    @if (canManage && r.Status is "Open" or "Processed")
+    {
+        <form asp-action="Process" asp-route-id="@r.PayrollRunId" method="post" class="inline"><button class="btn" type="submit">@(r.Status == "Open" ? "Process payroll" : "Re-process payroll")</button></form>
+    }
+    @if (canManage && r.Status == "Processed")
+    {
+        <form asp-action="Approve" asp-route-id="@r.PayrollRunId" method="post" class="inline" data-confirm="Approve and lock this run? Loan recoveries will be posted and it cannot be re-processed."><button class="btn" type="submit">Approve &amp; lock</button></form>
+    }
+    @if (canManage && r.Status == "Approved")
+    {
+        <form asp-action="MarkPaid" asp-route-id="@r.PayrollRunId" method="post" class="inline" data-confirm="Mark this run as paid?"><button class="btn" type="submit">Mark as paid</button></form>
+    }
+    @if (r.EmployeeCount > 0)
+    {
+        <a class="btn secondary" asp-controller="Reports" asp-action="Department" asp-route-runId="@r.PayrollRunId">Department summary</a>
+        <a class="btn secondary" asp-controller="Reports" asp-action="Statutory" asp-route-runId="@r.PayrollRunId">Statutory report</a>
+        <a class="btn secondary" asp-controller="Reports" asp-action="Register" asp-route-runId="@r.PayrollRunId" asp-route-export="true">Export register (CSV)</a>
+    }</div></div>
+@if (Model.Register is { } reg)
+{
+    <div class="card scroll"><h2>Payroll register</h2>
+        <table class="data"><thead><tr>@foreach (var c in reg.Columns.Skip(1)) { <th>@c</th> }<th></th></tr></thead><tbody>
+        @foreach (var row in reg.Rows)
+        {
+            <tr>@for (var i = 1; i < row.Length; i++) { <td class="@(row[i] is decimal ? "num" : "")">@Fmt.Cell(row[i])</td> }<td><a asp-controller="Payslips" asp-action="Details" asp-route-id="@row[0]">Payslip</a></td></tr>
+        }</tbody></table>
+        @if (Model.Pager is { } pg) { <partial name="_Pager" model="pg" /> }
+    </div>
+}

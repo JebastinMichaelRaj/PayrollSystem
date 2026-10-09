@@ -1,0 +1,17 @@
+@model PayrollIndexViewModel
+@{ ViewData["Title"] = "Payroll runs"; bool canManage = User.IsInRole(Roles.Admin) || User.IsInRole(Roles.Payroll); }
+<div class="pagehead"><h1>Payroll runs</h1></div>
+@if (canManage)
+{
+    <div class="card"><h2>Start a run</h2><form asp-action="Create" method="post" class="inline-form">
+        <div class="field"><label>Year</label><input name="year" type="number" value="@Model.Year" /></div><div class="field"><label>Month</label><input name="month" type="number" min="1" max="12" value="@Model.Month" /></div>
+        <button class="btn" type="submit" style="align-self:end">Create run</button></form>
+        <p class="muted">Lifecycle: Open &rarr; Processed (re-runnable) &rarr; Approved (locked, loans posted) &rarr; Paid.</p></div>
+}
+<div class="card scroll"><table class="data"><thead><tr><th>Period</th><th>Status</th><th class="num">Employees</th><th class="num">Gross</th><th class="num">Deductions</th><th class="num">Net</th><th class="num">Employer cost</th><th></th></tr></thead><tbody>
+@foreach (var r in Model.Runs)
+{
+    <tr><td>@Fmt.Month(r.PeriodYear, r.PeriodMonth)</td><td><span class="badge @Fmt.Badge(r.Status)">@r.Status</span></td><td class="num">@r.EmployeeCount</td><td class="num">@Fmt.Money(r.TotalGross)</td><td class="num">@Fmt.Money(r.TotalDeductions)</td><td class="num">@Fmt.Money(r.TotalNet)</td><td class="num">@Fmt.Money(r.TotalEmployerCost)</td><td><a asp-action="Run" asp-route-id="@r.PayrollRunId">Open</a></td></tr>
+}
+@if (!Model.Runs.Any()) { <tr><td colspan="8" class="muted">No runs yet.</td></tr> }
+</tbody></table></div>

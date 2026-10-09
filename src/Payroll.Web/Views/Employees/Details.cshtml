@@ -1,0 +1,22 @@
+@model EmployeeDetailsViewModel
+@{ var e = Model.Employee; ViewData["Title"] = e.FullName; }
+<div class="pagehead"><h1>@e.FullName <span class="badge @(e.IsActive ? "ok" : "off")">@(e.IsActive ? "Active" : "Left")</span></h1>
+    <div><a class="btn secondary" asp-action="Edit" asp-route-id="@e.EmployeeId">Edit</a> <a class="btn" asp-controller="Salary" asp-action="Manage" asp-route-employeeId="@e.EmployeeId">Salary &amp; components</a></div></div>
+<div class="card"><dl class="kv">
+    <dt>Code</dt><dd>@e.EmployeeCode</dd><dt>Email</dt><dd>@e.Email</dd><dt>Phone</dt><dd>@(e.Phone ?? "-")</dd>
+    <dt>Department</dt><dd>@e.Department</dd><dt>Designation</dt><dd>@e.Designation</dd><dt>Manager</dt><dd>@(e.ManagerName ?? "-")</dd>
+    <dt>Employment</dt><dd>@e.EmploymentType</dd><dt>Joined</dt><dd>@Fmt.Date(e.JoinDate)</dd><dt>Left</dt><dd>@Fmt.Date(e.ExitDate)</dd>
+    <dt>Tax ID</dt><dd>@(e.TaxIdNumber ?? "-")</dd><dt>Bank</dt><dd>@(e.BankName ?? "-")</dd>
+</dl></div>
+<div class="card"><h2>Salary history</h2>
+    <table class="data"><thead><tr><th>From</th><th>To</th><th class="num">Basic</th><th class="num">Std hours</th><th>Overtime</th></tr></thead><tbody>
+    @foreach (var s in Model.Salary) { <tr><td>@Fmt.Date(s.EffectiveFrom)</td><td>@(s.EffectiveTo is null ? "current" : Fmt.Date(s.EffectiveTo))</td><td class="num">@Fmt.Money(s.BasicSalary)</td><td class="num">@Fmt.Num(s.StandardHoursPerMonth)</td><td>@(s.OvertimeEligible ? "Eligible" : "No")</td></tr> }
+    @if (!Model.Salary.Any()) { <tr><td colspan="5" class="muted">No salary structure yet - this employee will be skipped by payroll.</td></tr> }
+    </tbody></table></div>
+@if (e.IsActive)
+{
+    <div class="card"><h2>Record exit</h2>
+        <form asp-action="Terminate" asp-route-id="@e.EmployeeId" method="post" class="inline-form" data-confirm="Mark this employee as left? Their login will be disabled.">
+            <div class="field"><label>Last working day</label><input type="date" name="exitDate" required /></div>
+            <button class="btn danger" type="submit" style="align-self:end">Terminate</button></form></div>
+}
